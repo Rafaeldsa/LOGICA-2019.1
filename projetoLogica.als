@@ -4,26 +4,28 @@ sig Usuario {
 	arquivos: set ArquivoUpado
 }
 
-
 sig ArquivoUpado {
-	data:               one Data,
-	modificacao:   one Data,
-	uCriador:        one Usuario,
-	versoes:          set Versao
+	data: one Data,
+	modificacao: one Data,
+	uCriador: one Usuario,
+	versoes: set Versao
 }
-
 
 
 sig Data {
-	dia:          one Dia,
-	hora:       one Hora,
-	minuto :   one Minuto,
-	segundo: one Segundo
+	dia: one Dia,
 }
 
-sig Dia {}
-sig Hora{}
-sig Minuto {}
+sig Dia {
+	horas: one Hora
+}
+
+sig Hora{
+	minutos: one Minuto
+}
+sig Minuto {
+	segundos: one Segundo
+}
 sig Segundo{}
 
 abstract sig Versao {}
@@ -32,7 +34,7 @@ sig VersaoAnterior extends Versao {}
 
 fact {
 	-- Definições sobre o usuário
-	all u:Usuario | some u.arquivos
+
 
 	-- Definições sobre arquivo
 	all a:ArquivoUpado | one a.~arquivos
@@ -44,19 +46,18 @@ fact {
 
 
 	-- Definições sobre tempo
-	all d:Data        | one d.~data
-	all s:Segundo  | one s.~segundo
-	-- Definir dia sempre tem um arquivo
-	-- Definir hora sempre tem um arquivo
-	-- Definir minuto sempre tem um arquivo
-	-- Definir Data só um arquivo
-
+	all d:Data | one d.~data
+	all d:Dia | one d.~dia
+	all h:Hora | one h.~horas
+	all m:Minuto | one m.~minutos
+	all s:Segundo | one s.~segundos
 }
 
+-- Criar Usuario
 
 
 pred show[] {
 
 }
 
-run show for 2
+run show for 3
