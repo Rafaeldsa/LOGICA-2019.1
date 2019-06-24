@@ -1,0 +1,47 @@
+MODULE main
+
+    VAR
+        arquivo: {disponivel, leitura, modificacao};
+        
+        escritaReq: boolean;
+        leituraReq: boolean;
+        
+        userPerm: {none, readOnly, readWrite};                                                             -- permissoes do usuario
+
+    ASSIGN
+        init(arquivo) := disponivel;
+        
+        init(escritaReq) := FALSE;
+        init(leituraReq) := FALSE;
+        
+        init(userPerm) := readWrite;
+
+            next(arquivo) :=
+                case
+
+                    -- Nao ha requisicoes
+                    (arquivo = disponivel) & (escritaReq = FALSE) & (leituraReq = FALSE) : {disponivel};
+
+                    -- Casos de comecar a leitura
+                    (arquivo = disponivel) & (leituraReq = TRUE) & (userPerm = readWrite) : {leitura};     -- usuario com permissao de leitura e escrita
+                    (arquivo = disponivel) & (leituraReq = TRUE) & (userPerm = readOnly): {leitura};       -- usuario com permissao apenas de leitura
+                    (arquivo = disponivel) & (leituraReq = TRUE) & (userPerm = none): {disponivel};        -- usuario sem permissoes
+
+                    -- Casos de comecar a escrita
+                    (arquivo = disponivel) & (escritaReq = TRUE) & (userPerm = readWrite) : {modificacao}; -- usuario com permissao de leitura e escrita
+                    (arquivo = disponivel) & (escritaReq = TRUE) & (userPerm = readOnly): {disponivel};    -- usuario com permissao apenas de leitura
+                    (arquivo = disponivel) & (escritaReq = TRUE) & (userPerm = none): {disponivel};        -- usuario sem permissoes
+                    
+                    -- Casos de continuar/finalizar a leitura
+                    (arquivo = leitura) & (leituraReq = TRUE) : {leitura};                                 -- request de leitura continua ativo
+                    (arquivo = leitura) & (leituraReq = FALSE) : {disponivel};                             -- request de leitura eh finalizado
+
+                    -- Casos de continuar/finalizar a escrita
+                    (arquivo = modificacao) & (escritaReq = TRUE) : {modificacao};                         -- request de escrita continua ativo
+                    (arquivo = modificacao) & (escritaReq = FALSE) : {disponivel};                         -- request de escrita eh finalizado
+
+                esac;
+
+            -- Proximo estado das requisicoes de leitura e escrita
+            next(leituraReq) := {TRUE, FALSE};
+            next(escritaReq) := {TRUE, FALSE};
